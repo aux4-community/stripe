@@ -1,0 +1,18 @@
+{
+  "profiles": [
+    {
+      "name": "main",
+      "commands": [
+        {
+          "name": "build",
+          "execute": [
+            "log:aux4/stripe is a shell-only package, no build required."
+          ],
+          "help": {
+            "text": "Build the aux4/stripe package"
+          }
+        }
+      ]
+    }
+  ]
+}

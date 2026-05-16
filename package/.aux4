@@ -1,0 +1,534 @@
+{
+  "scope": "aux4",
+  "name": "stripe",
+  "version": "1.0.0",
+  "description": "Stripe CLI wrapper for managing products, prices, subscriptions, and monitoring revenue",
+  "license": "MIT",
+  "tags": [
+    "stripe",
+    "payments",
+    "billing",
+    "revenue",
+    "subscriptions"
+  ],
+  "system": [
+    [
+      "test:stripe --version",
+      "brew:stripe/stripe-cli/stripe"
+    ],
+    [
+      "test:jq --version",
+      "brew:jq",
+      "apt:jq",
+      "apk:jq"
+    ]
+  ],
+  "profiles": [
+    {
+      "name": "main",
+      "commands": [
+        {
+          "name": "stripe",
+          "execute": [
+            "profile:stripe"
+          ],
+          "help": {
+            "text": "Stripe management commands"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe",
+      "commands": [
+        {
+          "name": "products",
+          "execute": [
+            "profile:stripe:products"
+          ],
+          "help": {
+            "text": "Manage Stripe products"
+          }
+        },
+        {
+          "name": "prices",
+          "execute": [
+            "profile:stripe:prices"
+          ],
+          "help": {
+            "text": "Manage Stripe prices"
+          }
+        },
+        {
+          "name": "links",
+          "execute": [
+            "profile:stripe:links"
+          ],
+          "help": {
+            "text": "Manage payment links"
+          }
+        },
+        {
+          "name": "subscriptions",
+          "execute": [
+            "profile:stripe:subscriptions"
+          ],
+          "help": {
+            "text": "Manage subscriptions"
+          }
+        },
+        {
+          "name": "customers",
+          "execute": [
+            "profile:stripe:customers"
+          ],
+          "help": {
+            "text": "Manage customers"
+          }
+        },
+        {
+          "name": "webhooks",
+          "execute": [
+            "profile:stripe:webhooks"
+          ],
+          "help": {
+            "text": "Manage webhooks"
+          }
+        },
+        {
+          "name": "revenue",
+          "execute": [
+            "profile:stripe:revenue"
+          ],
+          "help": {
+            "text": "Revenue monitoring and reports"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:products",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe products list --limit ${limit}"
+          ],
+          "help": {
+            "text": "List all products",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of products to list",
+                "default": "10"
+              }
+            ]
+          }
+        },
+        {
+          "name": "get",
+          "execute": [
+            "stripe products retrieve ${productId}"
+          ],
+          "help": {
+            "text": "Get a product by ID",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Product ID",
+                "arg": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "create",
+          "execute": [
+            "stripe products create --name values(name) --description values(description)"
+          ],
+          "help": {
+            "text": "Create a new product",
+            "variables": [
+              {
+                "name": "name",
+                "text": "Product name"
+              },
+              {
+                "name": "description",
+                "text": "Product description",
+                "default": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "update",
+          "execute": [
+            "stripe products update ${productId} --name values(name)"
+          ],
+          "help": {
+            "text": "Update a product",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Product ID",
+                "arg": true
+              },
+              {
+                "name": "name",
+                "text": "New product name"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:prices",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe prices list --product ${productId} --limit ${limit}"
+          ],
+          "help": {
+            "text": "List prices for a product",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Product ID",
+                "arg": true
+              },
+              {
+                "name": "limit",
+                "text": "Number of prices to list",
+                "default": "10"
+              }
+            ]
+          }
+        },
+        {
+          "name": "create",
+          "execute": [
+            "stripe prices create --product ${productId} --unit-amount ${amount} --currency ${currency} -d \"recurring[interval]=${interval}\""
+          ],
+          "help": {
+            "text": "Create a recurring price",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Product ID"
+              },
+              {
+                "name": "amount",
+                "text": "Amount in cents (e.g., 500 for $5.00)"
+              },
+              {
+                "name": "currency",
+                "text": "Currency code",
+                "default": "usd"
+              },
+              {
+                "name": "interval",
+                "text": "Billing interval",
+                "default": "month",
+                "options": [
+                  "month",
+                  "year"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:links",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe payment_links list --limit ${limit}"
+          ],
+          "help": {
+            "text": "List payment links",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of links to list",
+                "default": "10"
+              }
+            ]
+          }
+        },
+        {
+          "name": "create",
+          "execute": [
+            "stripe payment_links create -d \"line_items[0][price]=${priceId}\" -d \"line_items[0][quantity]=1\""
+          ],
+          "help": {
+            "text": "Create a payment link for a price",
+            "variables": [
+              {
+                "name": "priceId",
+                "text": "Price ID",
+                "arg": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:subscriptions",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe subscriptions list --limit ${limit} --status ${status}"
+          ],
+          "help": {
+            "text": "List subscriptions",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of subscriptions to list",
+                "default": "10"
+              },
+              {
+                "name": "status",
+                "text": "Filter by status",
+                "default": "active",
+                "options": [
+                  "active",
+                  "past_due",
+                  "canceled",
+                  "all"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "get",
+          "execute": [
+            "stripe subscriptions retrieve ${subscriptionId}"
+          ],
+          "help": {
+            "text": "Get subscription details",
+            "variables": [
+              {
+                "name": "subscriptionId",
+                "text": "Subscription ID",
+                "arg": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "cancel",
+          "execute": [
+            "confirm:Cancel subscription ${subscriptionId}?",
+            "stripe subscriptions cancel ${subscriptionId} --prorate"
+          ],
+          "help": {
+            "text": "Cancel a subscription",
+            "variables": [
+              {
+                "name": "subscriptionId",
+                "text": "Subscription ID",
+                "arg": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:customers",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe customers list --limit ${limit}"
+          ],
+          "help": {
+            "text": "List customers",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of customers to list",
+                "default": "10"
+              }
+            ]
+          }
+        },
+        {
+          "name": "search",
+          "execute": [
+            "stripe customers search --query \"email:'${email}'\""
+          ],
+          "help": {
+            "text": "Search customers by email",
+            "variables": [
+              {
+                "name": "email",
+                "text": "Email to search",
+                "arg": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:webhooks",
+      "commands": [
+        {
+          "name": "listen",
+          "execute": [
+            "stripe listen --forward-to ${forwardTo}"
+          ],
+          "help": {
+            "text": "Forward webhook events to a local endpoint",
+            "variables": [
+              {
+                "name": "forwardTo",
+                "text": "Local endpoint URL",
+                "default": "http://localhost:3001/v1/billing/events"
+              }
+            ]
+          }
+        },
+        {
+          "name": "endpoints",
+          "execute": [
+            "stripe webhook_endpoints list"
+          ],
+          "help": {
+            "text": "List configured webhook endpoints"
+          }
+        },
+        {
+          "name": "trigger",
+          "execute": [
+            "stripe trigger ${event}"
+          ],
+          "help": {
+            "text": "Trigger a test webhook event",
+            "variables": [
+              {
+                "name": "event",
+                "text": "Event type to trigger",
+                "arg": true,
+                "options": [
+                  "checkout.session.completed",
+                  "customer.subscription.created",
+                  "customer.subscription.updated",
+                  "customer.subscription.deleted",
+                  "invoice.payment_succeeded",
+                  "invoice.payment_failed",
+                  "charge.refunded"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:revenue",
+      "commands": [
+        {
+          "name": "summary",
+          "execute": [
+            "nout:stripe subscriptions list --status active --limit 100 -d expand[]=data.plan 2>/dev/null",
+            "json:${response}",
+            "set:activeCount=!echo '${response}' | jq '.data | length'",
+            "set:mrr=!echo '${response}' | jq '[.data[].plan.amount // 0] | add // 0 | . / 100'",
+            "log:=== Revenue Summary ===",
+            "log:Active Subscriptions: ${activeCount}",
+            "log:MRR: $${mrr}",
+            "log:ARR: $!echo \"${mrr} * 12\" | bc"
+          ],
+          "help": {
+            "text": "Show revenue summary (MRR, ARR, active subscribers)"
+          }
+        },
+        {
+          "name": "charges",
+          "execute": [
+            "stripe charges list --limit ${limit} --created[gte]=${since}"
+          ],
+          "help": {
+            "text": "List recent charges",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of charges to list",
+                "default": "25"
+              },
+              {
+                "name": "since",
+                "text": "Unix timestamp to filter from (default: 30 days ago)",
+                "default": "!date -v-30d +%s"
+              }
+            ]
+          }
+        },
+        {
+          "name": "invoices",
+          "execute": [
+            "stripe invoices list --limit ${limit} --status ${status}"
+          ],
+          "help": {
+            "text": "List invoices",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of invoices to list",
+                "default": "25"
+              },
+              {
+                "name": "status",
+                "text": "Filter by status",
+                "default": "paid",
+                "options": [
+                  "paid",
+                  "open",
+                  "void",
+                  "uncollectible"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "balance",
+          "execute": [
+            "stripe balance retrieve"
+          ],
+          "help": {
+            "text": "Show current Stripe balance"
+          }
+        },
+        {
+          "name": "payouts",
+          "execute": [
+            "stripe payouts list --limit ${limit}"
+          ],
+          "help": {
+            "text": "List recent payouts",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Number of payouts to list",
+                "default": "10"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
