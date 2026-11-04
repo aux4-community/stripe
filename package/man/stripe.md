@@ -1,6 +1,6 @@
 #### Description
 
-The `stripe` command is the top-level entry point for all Stripe management commands. It provides subcommand groups for managing products, prices, payment links, subscriptions, customers, webhooks, and revenue monitoring.
+The `stripe` command is the top-level entry point for all Stripe management commands. It provides subcommand groups for managing products, prices, Billing Meters and meter events, payment links, subscriptions, customers, webhooks, and revenue monitoring.
 
 The management commands wrap the Stripe CLI and use its authentication. The generic API command uses an explicit API key environment variable and test/live mode, independently of CLI login.
 
@@ -8,6 +8,7 @@ Available subcommands:
 
 - **products** — Create, list, get, and update Stripe products
 - **prices** — List and create recurring prices
+- **billing** — Manage Billing Meters and record meter events
 - **links** — List and create payment links
 - **subscriptions** — List, get, and cancel subscriptions
 - **customers** — List and search customers
@@ -25,6 +26,7 @@ aux4 stripe <subcommand>
 
 ```bash
 aux4 stripe products list
+aux4 stripe billing meters list
 aux4 stripe revenue summary
 aux4 stripe webhooks listen
 ```

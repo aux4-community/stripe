@@ -140,6 +140,15 @@
           "help": {
             "text": "Call the Stripe API"
           }
+        },
+        {
+          "name": "billing",
+          "execute": [
+            "profile:stripe:billing"
+          ],
+          "help": {
+            "text": "Manage Stripe Billing meters and usage events"
+          }
         }
       ]
     },
@@ -259,6 +268,44 @@
               {
                 "name": "amount",
                 "text": "Amount in cents (e.g., 500 for $5.00)"
+              },
+              {
+                "name": "currency",
+                "text": "Currency code",
+                "default": "usd"
+              },
+              {
+                "name": "interval",
+                "text": "Billing interval",
+                "default": "month",
+                "options": [
+                  "month",
+                  "year"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "create-metered",
+          "execute": [
+            "stripe prices create --product values(productId) --unit-amount values(amount) --currency values(currency) --recurring.interval values(interval) --recurring.usage-type metered --recurring.meter values(meterId)"
+          ],
+          "help": {
+            "text": "Create a recurring metered price for a Stripe Billing meter",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Stripe product ID",
+                "arg": true
+              },
+              {
+                "name": "meterId",
+                "text": "Stripe Billing Meter ID"
+              },
+              {
+                "name": "amount",
+                "text": "Amount in cents per meter unit"
               },
               {
                 "name": "currency",
@@ -586,6 +633,197 @@
           ],
           "help": {
             "text": "Send a JSON-described HTTP request to Stripe"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing",
+      "commands": [
+        {
+          "name": "meters",
+          "execute": [
+            "profile:stripe:billing:meters"
+          ],
+          "help": {
+            "text": "Manage Billing Meters"
+          }
+        },
+        {
+          "name": "meter-events",
+          "execute": [
+            "profile:stripe:billing:meter-events"
+          ],
+          "help": {
+            "text": "Record a Billing Meter event"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing:meters",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "stripe billing meters list --limit values(limit) --color off 2>/dev/null | jq .data"
+          ],
+          "help": {
+            "text": "List Billing Meters",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Maximum meters to return",
+                "default": "100"
+              }
+            ]
+          }
+        },
+        {
+          "name": "get",
+          "execute": [
+            "stripe billing meters retrieve values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Retrieve a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "create",
+          "execute": [
+            "stripe billing meters create --display-name values(displayName) --event-name values(eventName) --default-aggregation.formula values(formula) --customer-mapping.type by_id --customer-mapping.event-payload-key values(customerKey) --value-settings.event-payload-key values(valueKey) --confirm --color off"
+          ],
+          "help": {
+            "text": "Create a Billing Meter",
+            "variables": [
+              {
+                "name": "displayName",
+                "text": "Meter name shown in Stripe",
+                "arg": true
+              },
+              {
+                "name": "eventName",
+                "text": "Stable meter event name"
+              },
+              {
+                "name": "formula",
+                "text": "Aggregation formula",
+                "default": "sum",
+                "options": [
+                  "sum",
+                  "count",
+                  "last"
+                ]
+              },
+              {
+                "name": "customerKey",
+                "text": "Event payload key containing the Stripe customer ID",
+                "default": "stripe_customer_id"
+              },
+              {
+                "name": "valueKey",
+                "text": "Event payload key containing the measured value",
+                "default": "value"
+              }
+            ]
+          }
+        },
+        {
+          "name": "update",
+          "execute": [
+            "stripe billing meters update values(meterId) --display-name values(displayName) --color off"
+          ],
+          "help": {
+            "text": "Update a Billing Meter display name",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              },
+              {
+                "name": "displayName",
+                "text": "New display name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "deactivate",
+          "execute": [
+            "stripe billing meters deactivate values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Deactivate a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "reactivate",
+          "execute": [
+            "stripe billing meters reactivate values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Reactivate a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing:meter-events",
+      "commands": [
+        {
+          "name": "create",
+          "execute": [
+            "set:customerPayload=payload[stripe_customer_id]=${customerId}",
+            "set:valuePayload=payload[value]=${value}",
+            "stripe billing meter_events create --event-name values(eventName) --identifier values(identifier) --timestamp values(timestamp) -d values(customerPayload) -d values(valuePayload) --color off"
+          ],
+          "help": {
+            "text": "Record a usage event for a Billing Meter",
+            "variables": [
+              {
+                "name": "eventName",
+                "text": "Billing Meter event name",
+                "arg": true
+              },
+              {
+                "name": "identifier",
+                "text": "Stable unique event identifier"
+              },
+              {
+                "name": "timestamp",
+                "text": "Unix timestamp for the event"
+              },
+              {
+                "name": "customerId",
+                "text": "Stripe customer ID"
+              },
+              {
+                "name": "value",
+                "text": "Numeric usage amount"
+              }
+            ]
           }
         }
       ]

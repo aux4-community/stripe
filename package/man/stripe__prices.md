@@ -6,6 +6,7 @@ Available subcommands:
 
 - **list** — List prices for a specific product
 - **create** — Create a new recurring price for a product
+- **create-metered** — Create a recurring price attached to a Billing Meter
 
 #### Usage
 
@@ -18,4 +19,5 @@ aux4 stripe prices <subcommand>
 ```bash
 aux4 stripe prices list prod_abc123
 aux4 stripe prices create --productId prod_abc123 --amount 1000 --currency usd --interval month
+aux4 stripe prices create-metered prod_abc123 --meterId mtr_abc123 --amount 10
 ```
