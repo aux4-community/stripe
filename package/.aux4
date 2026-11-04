@@ -1,8 +1,8 @@
 {
-  "scope": "aux4",
+  "scope": "community",
   "name": "stripe",
-  "version": "1.0.0",
-  "description": "Stripe CLI wrapper for managing products, prices, subscriptions, and monitoring revenue",
+  "version": "1.1.0",
+  "description": "Stripe CLI and API communication for live and sandbox environments",
   "license": "MIT",
   "tags": [
     "stripe",
@@ -21,6 +21,13 @@
       "brew:jq",
       "apt:jq",
       "apk:jq"
+    ],
+    [
+      "test:node --version",
+      "brew:node",
+      "apt:nodejs",
+      "dnf:nodejs",
+      "apk:nodejs"
     ]
   ],
   "profiles": [
@@ -41,6 +48,27 @@
     {
       "name": "stripe",
       "commands": [
+        {
+          "name": "login",
+          "execute": [
+            "json:stripe login",
+            "set:browserUrl=${response.browser_url}",
+            "set:code=${response.verification_code}",
+            "set:nextStep=${response.next_step}",
+            "log:",
+            "log:Open this URL in your browser:",
+            "log:  ${browserUrl}",
+            "log:",
+            "log:Verification code: ${code}",
+            "log:",
+            "confirm:Press Enter after confirming in browser",
+            "${nextStep}",
+            "log:Logged in successfully"
+          ],
+          "help": {
+            "text": "Authenticate with Stripe"
+          }
+        },
         {
           "name": "products",
           "execute": [
@@ -103,6 +131,15 @@
           "help": {
             "text": "Revenue monitoring and reports"
           }
+        },
+        {
+          "name": "api",
+          "execute": [
+            "profile:stripe:api"
+          ],
+          "help": {
+            "text": "Call the Stripe API"
+          }
         }
       ]
     },
@@ -112,7 +149,7 @@
         {
           "name": "list",
           "execute": [
-            "stripe products list --limit ${limit}"
+            "stripe products list --limit ${limit} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List all products",
@@ -128,7 +165,7 @@
         {
           "name": "get",
           "execute": [
-            "stripe products retrieve ${productId}"
+            "stripe products retrieve ${productId} --color off"
           ],
           "help": {
             "text": "Get a product by ID",
@@ -189,7 +226,7 @@
         {
           "name": "list",
           "execute": [
-            "stripe prices list --product ${productId} --limit ${limit}"
+            "stripe prices list --product ${productId} --limit ${limit} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List prices for a product",
@@ -248,7 +285,7 @@
         {
           "name": "list",
           "execute": [
-            "stripe payment_links list --limit ${limit}"
+            "stripe payment_links list --limit ${limit} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List payment links",
@@ -285,7 +322,7 @@
         {
           "name": "list",
           "execute": [
-            "stripe subscriptions list --limit ${limit} --status ${status}"
+            "stripe subscriptions list --limit ${limit} --status ${status} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List subscriptions",
@@ -312,7 +349,7 @@
         {
           "name": "get",
           "execute": [
-            "stripe subscriptions retrieve ${subscriptionId}"
+            "stripe subscriptions retrieve ${subscriptionId} --color off"
           ],
           "help": {
             "text": "Get subscription details",
@@ -350,7 +387,7 @@
         {
           "name": "list",
           "execute": [
-            "stripe customers list --limit ${limit}"
+            "stripe customers list --limit ${limit} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List customers",
@@ -366,7 +403,7 @@
         {
           "name": "search",
           "execute": [
-            "stripe customers search --query \"email:'${email}'\""
+            "stripe customers search --query \"email:'${email}'\" 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "Search customers by email",
@@ -403,7 +440,7 @@
         {
           "name": "endpoints",
           "execute": [
-            "stripe webhook_endpoints list"
+            "stripe webhook_endpoints list --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List configured webhook endpoints"
@@ -442,23 +479,32 @@
         {
           "name": "summary",
           "execute": [
-            "nout:stripe subscriptions list --status active --limit 100 -d expand[]=data.plan 2>/dev/null",
-            "json:${response}",
-            "set:activeCount=!echo '${response}' | jq '.data | length'",
-            "set:mrr=!echo '${response}' | jq '[.data[].plan.amount // 0] | add // 0 | . / 100'",
-            "log:=== Revenue Summary ===",
-            "log:Active Subscriptions: ${activeCount}",
-            "log:MRR: $${mrr}",
-            "log:ARR: $!echo \"${mrr} * 12\" | bc"
+            "nout:stripe subscriptions list --status active --limit 100 -d value(expand) --color off",
+            "set:subscriptions=${response}",
+            "node ${packageDir}/lib/stripe.mjs revenue-summary values(subscriptions)"
           ],
           "help": {
-            "text": "Show revenue summary (MRR, ARR, active subscribers)"
+            "text": "Show revenue summary (MRR, ARR, active subscribers)",
+            "variables": [
+              {
+                "name": "subscriptions",
+                "text": "Internal subscription response",
+                "default": "",
+                "private": true
+              },
+              {
+                "name": "expand",
+                "text": "Internal subscription expansion",
+                "default": "expand[]=data.plan",
+                "private": true
+              }
+            ]
           }
         },
         {
           "name": "charges",
           "execute": [
-            "stripe charges list --limit ${limit} --created[gte]=${since}"
+            "stripe charges list --limit ${limit} -d \"created[gte]=${since}\" 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List recent charges",
@@ -479,7 +525,7 @@
         {
           "name": "invoices",
           "execute": [
-            "stripe invoices list --limit ${limit} --status ${status}"
+            "stripe invoices list --limit ${limit} --status ${status} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List invoices",
@@ -506,7 +552,7 @@
         {
           "name": "balance",
           "execute": [
-            "stripe balance retrieve"
+            "stripe balance retrieve --color off"
           ],
           "help": {
             "text": "Show current Stripe balance"
@@ -515,7 +561,7 @@
         {
           "name": "payouts",
           "execute": [
-            "stripe payouts list --limit ${limit}"
+            "stripe payouts list --limit ${limit} --color off 2>/dev/null | jq .data"
           ],
           "help": {
             "text": "List recent payouts",
@@ -526,6 +572,20 @@
                 "default": "10"
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:api",
+      "commands": [
+        {
+          "name": "request",
+          "execute": [
+            "stdin:node ${packageDir}/lib/stripe.mjs api-request"
+          ],
+          "help": {
+            "text": "Send a JSON-described HTTP request to Stripe"
           }
         }
       ]

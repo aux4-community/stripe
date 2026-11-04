@@ -1,2 +1,5 @@
 .DS_Store
 *.zip
+node_modules/
+package/lib/*.mjs
+.aux4-state/

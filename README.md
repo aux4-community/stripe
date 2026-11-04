@@ -1,6 +1,6 @@
-# aux4/stripe
+# community/stripe
 
-Stripe CLI wrapper for managing products, prices, subscriptions, and monitoring revenue.
+Stripe management and API access for live and sandbox environments.
 
-- [aux4 hub](https://hub.aux4.io/r/public/packages/aux4/stripe)
+- [aux4 hub](https://hub.aux4.io/r/public/packages/community/stripe)
 - [README.md](./package/README.md)

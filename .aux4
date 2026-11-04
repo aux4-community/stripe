@@ -6,10 +6,10 @@
         {
           "name": "build",
           "execute": [
-            "log:aux4/stripe is a shell-only package, no build required."
+            "npm run build"
           ],
           "help": {
-            "text": "Build the aux4/stripe package"
+            "text": "Build community/stripe"
           }
         }
       ]

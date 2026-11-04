@@ -2,7 +2,7 @@
 
 The `stripe` command is the top-level entry point for all Stripe management commands. It provides subcommand groups for managing products, prices, payment links, subscriptions, customers, webhooks, and revenue monitoring.
 
-This package wraps the Stripe CLI and requires authentication via `stripe login` before use.
+The management commands wrap the Stripe CLI and use its authentication. The generic API command uses an explicit API key environment variable and test/live mode, independently of CLI login.
 
 Available subcommands:
 
@@ -12,6 +12,7 @@ Available subcommands:
 - **subscriptions** — List, get, and cancel subscriptions
 - **customers** — List and search customers
 - **webhooks** — Listen for events, list endpoints, and trigger test events
+- **api** — Make generic Stripe HTTP requests
 - **revenue** — Monitor MRR, ARR, charges, invoices, balance, and payouts
 
 #### Usage

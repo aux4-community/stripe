@@ -1,13 +1,20 @@
 # stripe webhooks trigger
 
-## without stripe auth
+```file:bin/stripe
+#!/usr/bin/env node
+const args = process.argv.slice(2);
+console.log(JSON.stringify({source: 'stripe', args, data: [{source: 'stripe'}]}));
+```
+
+
+## with a simulated Stripe CLI
 
 ### should attempt to trigger a test event
 
 ```execute
-aux4 stripe webhooks trigger checkout.session.completed 2>&1 || true
+chmod +x bin/stripe && export PATH="$PWD/bin:$PATH" && test "$(command -v stripe)" = "$PWD/bin/stripe" && STRIPE_API_KEY=sk_test_OFFLINE_DO_NOT_USE aux4 stripe webhooks trigger checkout.session.completed
 ```
 
-```expect:partial
-*stripe*
+```expect:regex
+"source"\s*:\s*"stripe"
 ```

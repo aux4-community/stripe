@@ -1,14 +1,14 @@
-# aux4/stripe
+# community/stripe
 
-Stripe CLI wrapper for managing products, prices, payment links, subscriptions, customers, webhooks, and monitoring revenue from the command line.
+Manage Stripe products, prices, payment links, subscriptions, customers, webhooks and revenue from one package. It exposes a generic Stripe API request command for live and sandbox environments.
 
 ## Installation
 
 ```bash
-aux4 aux4 pkger install aux4/stripe
+aux4 aux4 pkger install community/stripe
 ```
 
-Requires the [Stripe CLI](https://stripe.com/docs/stripe-cli) and `jq` to be installed. The package will attempt to install them automatically via Homebrew if missing.
+Requires Node.js 22 or later, the [Stripe CLI](https://stripe.com/docs/stripe-cli) and `jq` to be installed. Automatic installation depends on the available package manager. The API command uses its explicitly configured key independently of Stripe CLI login.
 
 ## Quick Start
 
@@ -27,6 +27,18 @@ aux4 stripe webhooks listen --forwardTo http://localhost:3001/v1/billing/events
 ```
 
 ## Commands
+
+### Authentication
+
+| Command | Description |
+|---|---|
+| `aux4 stripe login` | Start the configured Stripe login flow |
+
+### API
+
+| Command | Description |
+|---|---|
+| `aux4 stripe api request` | Send a JSON-described HTTP request and return its status and body |
 
 ### Products
 
@@ -121,3 +133,56 @@ aux4 stripe webhooks listen
 # In another terminal, trigger a test event
 aux4 stripe webhooks trigger checkout.session.completed
 ```
+
+
+## API requests
+
+`aux4 stripe api request` accepts a JSON HTTP request on stdin. This command is independent of CLI login and can be used by other packages or scripts.
+
+Create `request.json`:
+
+```json
+{
+  "method": "POST",
+  "path": "/v1/products",
+  "data": {
+    "name": "Pro",
+    "metadata": {
+      "team": "billing"
+    },
+    "images": []
+  },
+  "idempotencyKey": "a-unique-key-for-this-operation",
+  "config": {
+    "apiKeyEnv": "STRIPE_DEV_API_KEY",
+    "mode": "test",
+    "account": ""
+  }
+}
+```
+
+```bash
+aux4 stripe api request < request.json
+```
+
+Supported methods: GET, POST and DELETE. `path` must be a relative Stripe `/v1/` path. `data` is optional; GET data becomes query parameters, while other methods send Stripe form data. Nested objects, arrays and empty clearing values are preserved. Optional `config.account` sends the connected-account header. Requests use API version `2026-10-28.endive`.
+
+`config.account` defaults to an empty value, which sends no connected-account header. Set it to an `acct_...` ID to target a connected account. `idempotencyKey` is optional; replace the example key with a unique key for each new write and reuse it only when retrying that same write.
+
+The result contains `status` and `body`. For example, a successful response has this shape; `body` contains the full Stripe response:
+
+```json
+{
+  "status": 200,
+  "body": {
+    "id": "prod_example",
+    "object": "product"
+  }
+}
+```
+
+HTTP errors remain in this envelope so callers can distinguish not-found, authorization and validation failures. Invalid input and transport failures exit nonzero. GET requests and writes with an idempotency key retry transient failures up to twice, using the same key and body. All attempts share a 30-second deadline.
+
+## Environment Variables
+
+The API command reads the key from the environment variable named by `config.apiKeyEnv`. Set `config.mode` to `test` for sandbox keys or `live` for production keys. Secret and restricted keys are supported. The key prefix must match the configured mode. The existing CLI commands continue to use the Stripe CLI's own authentication.
