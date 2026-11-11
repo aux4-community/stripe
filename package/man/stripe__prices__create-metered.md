@@ -5,7 +5,7 @@ The `create-metered` command creates a recurring price whose billed quantity com
 #### Usage
 
 ```bash
-aux4 stripe prices create-metered <productId> --meterId <meterId> --amount <cents> [--currency <code>] [--interval <month|year>]
+aux4 stripe prices create-metered <productId> --meterId <meterId> --amount <cents> [--currency <code>] [--interval <month|year>] [--mode <test|live>]
 ```
 
 --productId  Stripe product ID
@@ -13,10 +13,17 @@ aux4 stripe prices create-metered <productId> --meterId <meterId> --amount <cent
 --amount     Amount in currency minor units per meter unit
 --currency   Currency code (default: usd)
 --interval   Billing interval (default: month)
+--mode       Stripe CLI mode (default: test)
 
 #### Example
 
 ```bash
 aux4 stripe prices create-metered prod_cloud --meterId mtr_cloud_sm --amount 1000 --interval month
+```
+
+Use `--mode live` only when intentionally creating a production price:
+
+```bash
+aux4 stripe prices create-metered prod_cloud --meterId mtr_cloud_live --amount 1000 --mode live
 ```
 

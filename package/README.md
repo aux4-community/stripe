@@ -55,13 +55,13 @@ aux4 stripe webhooks listen --forwardTo http://localhost:3001/v1/billing/events
 |---------|-------------|
 | `aux4 stripe prices list <productId>` | List prices for a product |
 | `aux4 stripe prices create` | Create a recurring price |
-| `aux4 stripe prices create-metered <productId>` | Create a recurring price attached to a Billing Meter |
+| `aux4 stripe prices create-metered <productId>` | Create a recurring price attached to a Billing Meter (`--mode test|live`) |
 
 ### Billing Meters
 
 | Command | Description |
 |---|---|
-| `aux4 stripe billing meters list` | List Billing Meters |
+| `aux4 stripe billing meters list` | List Billing Meters (`--mode test|live`, default `test`) |
 | `aux4 stripe billing meters get <id>` | Retrieve a meter |
 | `aux4 stripe billing meters create` | Create a meter with customer and value payload mapping |
 | `aux4 stripe billing meters update <id>` | Update a meter display name |
@@ -129,6 +129,9 @@ aux4 stripe prices create-metered prod_xxx --meterId mtr_xxx --amount 1000
 aux4 stripe billing meter-events create aux4_cloud_machine_day_sm \
   --identifier dev-smoke-001 --timestamp 1793836800 \
   --customerId cus_test123 --value 1
+
+# Select live mode explicitly for an intentional production operation
+aux4 stripe billing meters get mtr_live123 --mode live
 
 # Create a payment link
 aux4 stripe links create price_xxx
