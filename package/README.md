@@ -1,6 +1,6 @@
 # community/stripe
 
-Manage Stripe products, prices, payment links, subscriptions, customers, webhooks and revenue from one package. It exposes a generic Stripe API request command for live and sandbox environments.
+Manage Stripe products, prices, Billing Meters, meter events, payment links, subscriptions, customers, webhooks and revenue from one package. It exposes a generic Stripe API request command for live and sandbox environments.
 
 ## Installation
 
@@ -55,6 +55,19 @@ aux4 stripe webhooks listen --forwardTo http://localhost:3001/v1/billing/events
 |---------|-------------|
 | `aux4 stripe prices list <productId>` | List prices for a product |
 | `aux4 stripe prices create` | Create a recurring price |
+| `aux4 stripe prices create-metered <productId>` | Create a recurring price attached to a Billing Meter (`--mode test|live`) |
+
+### Billing Meters
+
+| Command | Description |
+|---|---|
+| `aux4 stripe billing meters list` | List Billing Meters (`--mode test|live`, default `test`) |
+| `aux4 stripe billing meters get <id>` | Retrieve a meter |
+| `aux4 stripe billing meters create` | Create a meter with customer and value payload mapping |
+| `aux4 stripe billing meters update <id>` | Update a meter display name |
+| `aux4 stripe billing meters deactivate <id>` | Stop accepting events for a meter |
+| `aux4 stripe billing meters reactivate <id>` | Resume an inactive meter |
+| `aux4 stripe billing meter-events create <eventName>` | Record a meter event |
 
 ### Payment Links
 
@@ -106,6 +119,19 @@ aux4 stripe products create --name "aux4 KB Pro" --description "Knowledge base f
 
 # Create a $5/month price (amount in cents)
 aux4 stripe prices create --productId prod_xxx --amount 500
+
+# Create a meter and a metered price
+aux4 stripe billing meters create --displayName "Cloud machine days" \
+  --eventName aux4_cloud_machine_day_sm
+aux4 stripe prices create-metered prod_xxx --meterId mtr_xxx --amount 1000
+
+# Record one usage unit for a test customer (Stripe CLI defaults to test mode)
+aux4 stripe billing meter-events create aux4_cloud_machine_day_sm \
+  --identifier dev-smoke-001 --timestamp 1793836800 \
+  --customerId cus_test123 --value 1
+
+# Select live mode explicitly for an intentional production operation
+aux4 stripe billing meters get mtr_live123 --mode live
 
 # Create a payment link
 aux4 stripe links create price_xxx

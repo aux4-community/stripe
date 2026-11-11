@@ -1,7 +1,7 @@
 {
   "scope": "community",
   "name": "stripe",
-  "version": "1.1.1",
+  "version": "1.1.4",
   "description": "Stripe CLI and API communication for live and sandbox environments",
   "license": "MIT",
   "tags": [
@@ -140,6 +140,15 @@
           "help": {
             "text": "Call the Stripe API"
           }
+        },
+        {
+          "name": "billing",
+          "execute": [
+            "profile:stripe:billing"
+          ],
+          "help": {
+            "text": "Manage Stripe Billing meters and usage events"
+          }
         }
       ]
     },
@@ -272,6 +281,53 @@
                 "options": [
                   "month",
                   "year"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "create-metered",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) prices create --product values(productId) --unit-amount values(amount) --currency values(currency) --recurring.interval values(interval) --recurring.usage-type metered --recurring.meter values(meterId)"
+          ],
+          "help": {
+            "text": "Create a recurring metered price for a Stripe Billing meter",
+            "variables": [
+              {
+                "name": "productId",
+                "text": "Stripe product ID",
+                "arg": true
+              },
+              {
+                "name": "meterId",
+                "text": "Stripe Billing Meter ID"
+              },
+              {
+                "name": "amount",
+                "text": "Amount in cents per meter unit"
+              },
+              {
+                "name": "currency",
+                "text": "Currency code",
+                "default": "usd"
+              },
+              {
+                "name": "interval",
+                "text": "Billing interval",
+                "default": "month",
+                "options": [
+                  "month",
+                  "year"
+                ]
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
                 ]
               }
             ]
@@ -586,6 +642,272 @@
           ],
           "help": {
             "text": "Send a JSON-described HTTP request to Stripe"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing",
+      "commands": [
+        {
+          "name": "meters",
+          "execute": [
+            "profile:stripe:billing:meters"
+          ],
+          "help": {
+            "text": "Manage Billing Meters"
+          }
+        },
+        {
+          "name": "meter-events",
+          "execute": [
+            "profile:stripe:billing:meter-events"
+          ],
+          "help": {
+            "text": "Record a Billing Meter event"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing:meters",
+      "commands": [
+        {
+          "name": "list",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) --data billing meters list --limit values(limit) --color off"
+          ],
+          "help": {
+            "text": "List Billing Meters",
+            "variables": [
+              {
+                "name": "limit",
+                "text": "Maximum meters to return",
+                "default": "100"
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "get",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meters retrieve values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Retrieve a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "create",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meters create --display-name values(displayName) --event-name values(eventName) --default-aggregation.formula values(formula) --customer-mapping.type by_id --customer-mapping.event-payload-key values(customerKey) --value-settings.event-payload-key values(valueKey) --confirm --color off"
+          ],
+          "help": {
+            "text": "Create a Billing Meter",
+            "variables": [
+              {
+                "name": "displayName",
+                "text": "Meter name shown in Stripe",
+                "arg": true
+              },
+              {
+                "name": "eventName",
+                "text": "Stable meter event name"
+              },
+              {
+                "name": "formula",
+                "text": "Aggregation formula",
+                "default": "sum",
+                "options": [
+                  "sum",
+                  "count",
+                  "last"
+                ]
+              },
+              {
+                "name": "customerKey",
+                "text": "Event payload key containing the Stripe customer ID",
+                "default": "stripe_customer_id"
+              },
+              {
+                "name": "valueKey",
+                "text": "Event payload key containing the measured value",
+                "default": "value"
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "update",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meters update values(meterId) --display-name values(displayName) --color off"
+          ],
+          "help": {
+            "text": "Update a Billing Meter display name",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              },
+              {
+                "name": "displayName",
+                "text": "New display name"
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deactivate",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meters deactivate values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Deactivate a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "reactivate",
+          "execute": [
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meters reactivate values(meterId) --color off"
+          ],
+          "help": {
+            "text": "Reactivate a Billing Meter",
+            "variables": [
+              {
+                "name": "meterId",
+                "text": "Billing Meter ID",
+                "arg": true
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stripe:billing:meter-events",
+      "commands": [
+        {
+          "name": "create",
+          "execute": [
+            "set:customerPayload=payload[stripe_customer_id]=${customerId}",
+            "set:valuePayload=payload[value]=${value}",
+            "node ${packageDir}/lib/stripe.mjs stripe values(mode) billing meter_events create --event-name values(eventName) --identifier values(identifier) --timestamp values(timestamp) -d values(customerPayload) -d values(valuePayload) --color off"
+          ],
+          "help": {
+            "text": "Record a usage event for a Billing Meter",
+            "variables": [
+              {
+                "name": "eventName",
+                "text": "Billing Meter event name",
+                "arg": true
+              },
+              {
+                "name": "identifier",
+                "text": "Stable unique event identifier"
+              },
+              {
+                "name": "timestamp",
+                "text": "Unix timestamp for the event"
+              },
+              {
+                "name": "customerId",
+                "text": "Stripe customer ID"
+              },
+              {
+                "name": "value",
+                "text": "Numeric usage amount"
+              },
+              {
+                "name": "customerPayload",
+                "text": "Encoded customer payload",
+                "private": true,
+                "default": "payload[stripe_customer_id]=${customerId}"
+              },
+              {
+                "name": "valuePayload",
+                "text": "Encoded value payload",
+                "private": true,
+                "default": "payload[value]=${value}"
+              },
+              {
+                "name": "mode",
+                "text": "Stripe CLI mode",
+                "default": "test",
+                "options": [
+                  "test",
+                  "live"
+                ]
+              }
+            ]
           }
         }
       ]
